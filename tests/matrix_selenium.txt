@@ -1,0 +1,67 @@
+# Selenium exhaustive combination matrix
+# Format: test_name | +ENABLE_DEFINE -DISABLE_DEFINE ...
+#   +DEFINE = uncomment (enable)
+#   -DEFINE = comment out (disable)
+#   omitted = keep default from options.h
+#
+# Defaults: KB_LAYOUT_ERGOL=on, HT_HOME_ROW_MODS (implicit, no explicit define)
+#           everything else off.
+#
+# Options:
+#   Hold-tap: HT_NONE, HT_THUMB_TAPS, HT_HOME_ROW_MODS, HT_TWO_THUMB_KEYS
+#   Booleans: VIM_NAVIGATION, HRM_SHIFT, LEFT_HAND_SPACE
+
+# ── Default HT (HT_HOME_ROW_MODS) ───────────────────────────────────
+
+default                                   |
+default vim                               | +VIM_NAVIGATION
+default shift                             | +HRM_SHIFT
+default left_space                        | +LEFT_HAND_SPACE
+default vim shift                         | +VIM_NAVIGATION +HRM_SHIFT
+default vim left_space                    | +VIM_NAVIGATION +LEFT_HAND_SPACE
+default shift left_space                  | +HRM_SHIFT +LEFT_HAND_SPACE
+default vim shift left_space              | +VIM_NAVIGATION +HRM_SHIFT +LEFT_HAND_SPACE
+
+# ── HT_NONE ──────────────────────────────────────────────────────────
+
+ht_none                                   | +HT_NONE
+ht_none vim                               | +HT_NONE +VIM_NAVIGATION
+ht_none shift                             | +HT_NONE +HRM_SHIFT
+ht_none left_space                        | +HT_NONE +LEFT_HAND_SPACE
+ht_none vim shift                         | +HT_NONE +VIM_NAVIGATION +HRM_SHIFT
+ht_none vim left_space                    | +HT_NONE +VIM_NAVIGATION +LEFT_HAND_SPACE
+ht_none shift left_space                  | +HT_NONE +HRM_SHIFT +LEFT_HAND_SPACE
+ht_none vim shift left_space              | +HT_NONE +VIM_NAVIGATION +HRM_SHIFT +LEFT_HAND_SPACE
+
+# ── HT_THUMB_TAPS ────────────────────────────────────────────────────
+
+ht_thumb_taps                             | +HT_THUMB_TAPS
+ht_thumb_taps vim                         | +HT_THUMB_TAPS +VIM_NAVIGATION
+ht_thumb_taps shift                       | +HT_THUMB_TAPS +HRM_SHIFT
+ht_thumb_taps left_space                  | +HT_THUMB_TAPS +LEFT_HAND_SPACE
+ht_thumb_taps vim shift                   | +HT_THUMB_TAPS +VIM_NAVIGATION +HRM_SHIFT
+ht_thumb_taps vim left_space              | +HT_THUMB_TAPS +VIM_NAVIGATION +LEFT_HAND_SPACE
+ht_thumb_taps shift left_space            | +HT_THUMB_TAPS +HRM_SHIFT +LEFT_HAND_SPACE
+ht_thumb_taps vim shift left_space        | +HT_THUMB_TAPS +VIM_NAVIGATION +HRM_SHIFT +LEFT_HAND_SPACE
+
+# ── HT_HOME_ROW_MODS (explicit) ──────────────────────────────────────
+
+ht_hrm                                    | +HT_HOME_ROW_MODS
+ht_hrm vim                                | +HT_HOME_ROW_MODS +VIM_NAVIGATION
+ht_hrm shift                              | +HT_HOME_ROW_MODS +HRM_SHIFT
+ht_hrm left_space                         | +HT_HOME_ROW_MODS +LEFT_HAND_SPACE
+ht_hrm vim shift                          | +HT_HOME_ROW_MODS +VIM_NAVIGATION +HRM_SHIFT
+ht_hrm vim left_space                     | +HT_HOME_ROW_MODS +VIM_NAVIGATION +LEFT_HAND_SPACE
+ht_hrm shift left_space                   | +HT_HOME_ROW_MODS +HRM_SHIFT +LEFT_HAND_SPACE
+ht_hrm vim shift left_space               | +HT_HOME_ROW_MODS +VIM_NAVIGATION +HRM_SHIFT +LEFT_HAND_SPACE
+
+# ── HT_TWO_THUMB_KEYS ────────────────────────────────────────────────
+
+ht_two_thumbs                             | +HT_TWO_THUMB_KEYS
+ht_two_thumbs vim                         | +HT_TWO_THUMB_KEYS +VIM_NAVIGATION
+ht_two_thumbs shift                       | +HT_TWO_THUMB_KEYS +HRM_SHIFT
+ht_two_thumbs left_space                  | +HT_TWO_THUMB_KEYS +LEFT_HAND_SPACE
+ht_two_thumbs vim shift                   | +HT_TWO_THUMB_KEYS +VIM_NAVIGATION +HRM_SHIFT
+ht_two_thumbs vim left_space              | +HT_TWO_THUMB_KEYS +VIM_NAVIGATION +LEFT_HAND_SPACE
+ht_two_thumbs shift left_space            | +HT_TWO_THUMB_KEYS +HRM_SHIFT +LEFT_HAND_SPACE
+ht_two_thumbs vim shift left_space        | +HT_TWO_THUMB_KEYS +VIM_NAVIGATION +HRM_SHIFT +LEFT_HAND_SPACE
