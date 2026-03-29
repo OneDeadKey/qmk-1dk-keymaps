@@ -39,10 +39,10 @@
  * (KC_RALT becomes the `_symbols` layer if `ARSENIK_ENABLE_SYMBOLS_LAYER`
  * is active)
  *
- * (Prevents using `ARSENIK_ENABLE_SELENIUM_VARIANT`)
+ * (Prevents using `VIM_NAVIGATION`)
  */
 
-// #define ARSENIK_ENABLE_SELENIUM_VARIANT
+// #define VIM_NAVIGATION
 /* Most ergonomic keyboards have at least 4 comfortable thumb keys keys (so 2
  * per thumb). Selenium is a variant of Arsenik made to fit on 34 keys keyboard
  * to take advantage of the extra thumb key. It does it by splitting the numbers
@@ -52,20 +52,20 @@
  * Selenium: LSFT_T(KC_ESC) LT(_num_row, KC_BSPC) LT(_vim_nav, KC_SPC) RALT_T(KC_ENT)
  */
 
-// #define SELENIUM_LEFT_HAND_SPACE
+// #define LEFT_HAND_SPACE
 /* Swaps around the backspace and space keycodes, for people who prefer using
  * their left thunb for the space bar.
  *
- * (Requires `ARSENIK_ENABLE_SELENIUM_VARIANT`)
+ * (Requires `VIM_NAVIGATION`)
  */
 
-#define SELENIUM_RESTORE_SPACE
+#define RESTORE_SPACE
 /* Having Space accessible to only one thumb may create some problems, especially
  * when trying to type Shift + Space or Lafayette / AltGr + Space (depending if
  * your space key is on your left or right hand). When active, backspace gets
  * temporarily replaced by space when the original space key is held.
  *
- * (Requires `ARSENIK_ENABLE_SELENIUM_VARIANT`)
+ * (Requires `VIM_NAVIGATION`)
  */
 
 // Lists of layouts supported by Arsenik. Some parts of the config are dependent

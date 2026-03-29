@@ -9,9 +9,9 @@
 #
 # Constraints:
 #   - ARSENIK_MAC_MODIFIERS requires ARSENIK_ENABLE_HRM
-#   - SELENIUM_LEFT_HAND_SPACE requires ARSENIK_ENABLE_SELENIUM_VARIANT
-#   - SELENIUM_RESTORE_SPACE requires ARSENIK_ENABLE_SELENIUM_VARIANT
-#   - ARSENIK_ENABLE_SIMPLE_THUMBS and ARSENIK_ENABLE_SELENIUM_VARIANT are mutually exclusive
+#   - LEFT_HAND_SPACE requires VIM_NAVIGATION
+#   - RESTORE_SPACE requires VIM_NAVIGATION
+#   - ARSENIK_ENABLE_SIMPLE_THUMBS and VIM_NAVIGATION are mutually exclusive
 
 # ── Default thumb config ──────────────────────────────────────────────
 
@@ -33,27 +33,27 @@ simple symbols=off hrm=on+mac           | +ARSENIK_ENABLE_SIMPLE_THUMBS -ARSENIK
 
 # ── Selenium variant ──────────────────────────────────────────────────
 
-selenium hrm=off                                          | +ARSENIK_ENABLE_SELENIUM_VARIANT
-selenium hrm=off left_space                               | +ARSENIK_ENABLE_SELENIUM_VARIANT +SELENIUM_LEFT_HAND_SPACE
-selenium hrm=off restore_space                            | +ARSENIK_ENABLE_SELENIUM_VARIANT +SELENIUM_RESTORE_SPACE
-selenium hrm=off left_space restore_space                 | +ARSENIK_ENABLE_SELENIUM_VARIANT +SELENIUM_LEFT_HAND_SPACE +SELENIUM_RESTORE_SPACE
-selenium symbols=off hrm=off                            | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER
-selenium symbols=off hrm=off left_space                 | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +SELENIUM_LEFT_HAND_SPACE
-selenium symbols=off hrm=off restore_space              | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +SELENIUM_RESTORE_SPACE
-selenium symbols=off hrm=off left_space restore_space   | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +SELENIUM_LEFT_HAND_SPACE +SELENIUM_RESTORE_SPACE
-selenium hrm=on                                           | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM
-selenium hrm=on left_space                                | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +SELENIUM_LEFT_HAND_SPACE
-selenium hrm=on restore_space                             | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +SELENIUM_RESTORE_SPACE
-selenium hrm=on left_space restore_space                  | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +SELENIUM_LEFT_HAND_SPACE +SELENIUM_RESTORE_SPACE
-selenium hrm=on+mac                                       | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS
-selenium hrm=on+mac left_space                            | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +SELENIUM_LEFT_HAND_SPACE
-selenium hrm=on+mac restore_space                         | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +SELENIUM_RESTORE_SPACE
-selenium hrm=on+mac left_space restore_space              | +ARSENIK_ENABLE_SELENIUM_VARIANT +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +SELENIUM_LEFT_HAND_SPACE +SELENIUM_RESTORE_SPACE
-selenium symbols=off hrm=on                             | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM
-selenium symbols=off hrm=on left_space                  | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +SELENIUM_LEFT_HAND_SPACE
-selenium symbols=off hrm=on restore_space               | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +SELENIUM_RESTORE_SPACE
-selenium symbols=off hrm=on left_space restore_space    | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +SELENIUM_LEFT_HAND_SPACE +SELENIUM_RESTORE_SPACE
-selenium symbols=off hrm=on+mac                         | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS
-selenium symbols=off hrm=on+mac left_space              | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +SELENIUM_LEFT_HAND_SPACE
-selenium symbols=off hrm=on+mac restore_space           | +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +SELENIUM_RESTORE_SPACE
-selenium symbols=off hrm=on+mac left_space restore_space| +ARSENIK_ENABLE_SELENIUM_VARIANT -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +SELENIUM_LEFT_HAND_SPACE +SELENIUM_RESTORE_SPACE
+selenium hrm=off                                          | +VIM_NAVIGATION
+selenium hrm=off left_space                               | +VIM_NAVIGATION +LEFT_HAND_SPACE
+selenium hrm=off restore_space                            | +VIM_NAVIGATION +RESTORE_SPACE
+selenium hrm=off left_space restore_space                 | +VIM_NAVIGATION +LEFT_HAND_SPACE +RESTORE_SPACE
+selenium symbols=off hrm=off                            | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER
+selenium symbols=off hrm=off left_space                 | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +LEFT_HAND_SPACE
+selenium symbols=off hrm=off restore_space              | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +RESTORE_SPACE
+selenium symbols=off hrm=off left_space restore_space   | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +LEFT_HAND_SPACE +RESTORE_SPACE
+selenium hrm=on                                           | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM
+selenium hrm=on left_space                                | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +LEFT_HAND_SPACE
+selenium hrm=on restore_space                             | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +RESTORE_SPACE
+selenium hrm=on left_space restore_space                  | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +LEFT_HAND_SPACE +RESTORE_SPACE
+selenium hrm=on+mac                                       | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS
+selenium hrm=on+mac left_space                            | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +LEFT_HAND_SPACE
+selenium hrm=on+mac restore_space                         | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +RESTORE_SPACE
+selenium hrm=on+mac left_space restore_space              | +VIM_NAVIGATION +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +LEFT_HAND_SPACE +RESTORE_SPACE
+selenium symbols=off hrm=on                             | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM
+selenium symbols=off hrm=on left_space                  | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +LEFT_HAND_SPACE
+selenium symbols=off hrm=on restore_space               | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +RESTORE_SPACE
+selenium symbols=off hrm=on left_space restore_space    | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +LEFT_HAND_SPACE +RESTORE_SPACE
+selenium symbols=off hrm=on+mac                         | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS
+selenium symbols=off hrm=on+mac left_space              | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +LEFT_HAND_SPACE
+selenium symbols=off hrm=on+mac restore_space           | +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +RESTORE_SPACE
+selenium symbols=off hrm=on+mac left_space restore_space| +VIM_NAVIGATION -ARSENIK_ENABLE_SYMBOLS_LAYER +ARSENIK_ENABLE_HRM +ARSENIK_MAC_MODIFIERS +LEFT_HAND_SPACE +RESTORE_SPACE

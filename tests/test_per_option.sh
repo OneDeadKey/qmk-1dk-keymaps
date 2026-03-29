@@ -50,15 +50,15 @@ run_arsenik() {
         "$(enable ARSENIK_ENABLE_SIMPLE_THUMBS)"
 
     run_compile_test arsenik "selenium_variant=on" \
-        "$(enable ARSENIK_ENABLE_SELENIUM_VARIANT)"
+        "$(enable VIM_NAVIGATION)"
 
     run_compile_test arsenik "selenium_variant=on left_space=on" \
-        "$(enable ARSENIK_ENABLE_SELENIUM_VARIANT)" \
-        "$(enable SELENIUM_LEFT_HAND_SPACE)"
+        "$(enable VIM_NAVIGATION)" \
+        "$(enable LEFT_HAND_SPACE)"
 
     run_compile_test arsenik "selenium_variant=on restore_space=on" \
-        "$(enable ARSENIK_ENABLE_SELENIUM_VARIANT)" \
-        "$(enable SELENIUM_RESTORE_SPACE)"
+        "$(enable VIM_NAVIGATION)" \
+        "$(enable RESTORE_SPACE)"
 
     # Host layouts
     local host_sed=""

@@ -53,12 +53,12 @@
 #    define AS_TR_REACH MO(_num_nav)
 #    define AS_TR_HOME  KC_SPC
 #    define AS_TR_TUCK  SYMBOLS
-#elif defined ARSENIK_ENABLE_SELENIUM_VARIANT
+#elif defined VIM_NAVIGATION
 #    define AS_TL_REACH XX
 #    define AS_TR_REACH XX
 #    define AS_TL_TUCK  LSFT_T(KC_ESC)
 #    define AS_TR_TUCK  SYMBOLS_T(KC_ENT)
-#    if defined SELENIUM_LEFT_HAND_SPACE
+#    if defined LEFT_HAND_SPACE
 #        define AS_TL_HOME LT(_vim_nav, KC_SPC)
 #        define AS_TR_HOME LT(_num_row, KC_BSPC)
 #    else
