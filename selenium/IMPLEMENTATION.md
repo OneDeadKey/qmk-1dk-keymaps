@@ -46,8 +46,8 @@ The split is driven by `tap_keycode_is_tap_preferred()` (Selenium QMK helper), w
 
 The result:
 
-- **Tap-preferred keys** (HRM letters, Space) → `get_tapping_term()` returns 300ms, `get_hold_on_other_key_press()` returns `false`, global `PERMISSIVE_HOLD` active
-- **Hold-preferred keys** (Enter, Escape, Del, layer-taps) → `get_tapping_term()` returns 150ms, `get_hold_on_other_key_press()` returns `true`, global `PERMISSIVE_HOLD` active but redundant (dominated by `HOLD_ON_OTHER_KEY_PRESS`)
+- **Tap-preferred keys** (HRM letters, Space) → `get_tapping_term()` returns 300ms, `get_hold_on_other_key_press()` returns `false` — hold triggers only on tapping term expiry
+- **Hold-preferred keys** (Enter, Escape, Del, layer-taps) → `get_tapping_term()` returns 150ms, `get_hold_on_other_key_press()` returns `true` — hold triggers immediately on any keypress
 
 ### How the mapping works
 
@@ -57,8 +57,8 @@ The result:
 
 | Selenium ZMK behavior      | Selenium QMK equivalent                                       | Match                                                     |
 | -------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
-| `&hrm` 300ms tap-preferred | `*_T()` on letter → 300ms, `PERMISSIVE_HOLD` only             | See [Hold-tap behavior](#hold-tap-behavior)               |
-| `&lt` 300ms tap-preferred  | `LT()` on Space → 300ms, `PERMISSIVE_HOLD` only               | See [Hold-tap behavior](#hold-tap-behavior)               |
+| `&hrm` 300ms tap-preferred | `*_T()` on letter → 300ms, no interrupt-based hold            | See [Hold-tap behavior](#hold-tap-behavior)               |
+| `&lt` 300ms tap-preferred  | `LT()` on Space → 300ms, no interrupt-based hold              | See [Hold-tap behavior](#hold-tap-behavior)               |
 | `&sc` 150ms hold-preferred | `LT()` on Enter/Escape/Del → 150ms, `HOLD_ON_OTHER_KEY_PRESS` | Approximate (see [Hold-tap behavior](#hold-tap-behavior)) |
 | `&mt` 150ms hold-preferred | `*_T()` on Backspace → 150ms, `HOLD_ON_OTHER_KEY_PRESS`       | Approximate (see [Hold-tap behavior](#hold-tap-behavior)) |
 
@@ -68,10 +68,9 @@ ZMK natively attaches a `flavor` property to each hold-tap behavior definition. 
 
 QMK has no per-behavior system. Instead, QMK natively provides global flags (`PERMISSIVE_HOLD`, `HOLD_ON_OTHER_KEY_PRESS`) with optional per-key callbacks that apply uniformly to all hold-tap keys — or selectively when the `_PER_KEY` variant is enabled. These are documented in [QMK's tap-hold docs](https://docs.qmk.fm/tap_hold).
 
-Selenium QMK uses two QMK native flags in combination (`config.h`):
+Selenium QMK uses one QMK native flag (`config.h`):
 
 ```c
-#define PERMISSIVE_HOLD
 #define HOLD_ON_OTHER_KEY_PRESS_PER_KEY
 ```
 
@@ -79,78 +78,46 @@ Selenium QMK uses two QMK native flags in combination (`config.h`):
 
 These are all standard QMK features, not Selenium-specific code.
 
-**QMK default (no flags):** A hold-tap key resolves as "hold" only when the tapping term expires while the key is still held. Other keypresses during the hold are ignored — they do not influence the tap-or-hold decision.
+**QMK default (no flags):** A hold-tap key resolves as "hold" only when the tapping term expires while the key is still held. Other keypresses during the hold are ignored — they do not influence the tap-or-hold decision. This is the QMK equivalent of ZMK's `tap-preferred` flavor.
 
-**`PERMISSIVE_HOLD` (QMK native, global):** Adds one rule on top of the default: if a complete keypress (press **and** release of another key) occurs while the hold-tap key is still held, all within the tapping term, the hold-tap key resolves as **hold**. Rolling keypresses (where the hold-tap key is released before the other key) still resolve as tap. Can be made per-key via `PERMISSIVE_HOLD_PER_KEY` + a `get_permissive_hold()` callback (not used in Selenium QMK — see [below](#how-these-flags-interact-in-selenium-qmk)).
+**`HOLD_ON_OTHER_KEY_PRESS` (QMK native, per-key via callback):** If **any other key is pressed** (key down, no release needed) while this key is held, immediately trigger hold — regardless of the tapping term. Requires `HOLD_ON_OTHER_KEY_PRESS_PER_KEY` + a `get_hold_on_other_key_press()` callback.
 
-```
-Nested keypress (PERMISSIVE_HOLD triggers hold):
-HT key:  ████████████████░░░░
-Other:      ████░░░░░░░░░░░░░
-                ↑ other key released → hold resolved
+### How the flag applies in Selenium QMK
 
-Rolling keypress (PERMISSIVE_HOLD still resolves as tap):
-HT key:  ████████░░░░░░░░░░░░
-Other:      ████████░░░░░░░░░
-            ↑ HT key released first → tap
-```
+`get_hold_on_other_key_press()` (Selenium's implementation of the QMK native callback) returns `true` for non-text keys and `false` for text keys:
 
-**`HOLD_ON_OTHER_KEY_PRESS` (QMK native, per-key via callback):** If **any other key is pressed** (key down, no release needed) while this key is held, immediately trigger hold — regardless of the tapping term. This is strictly stronger than `PERMISSIVE_HOLD`: it triggers on key _down_ rather than key _down+up_. Requires `HOLD_ON_OTHER_KEY_PRESS_PER_KEY` + a `get_hold_on_other_key_press()` callback.
-
-### How these flags interact in Selenium QMK
-
-When both `PERMISSIVE_HOLD` and `HOLD_ON_OTHER_KEY_PRESS` are active on the same key, `HOLD_ON_OTHER_KEY_PRESS` dominates — it triggers first (on key down), before `PERMISSIVE_HOLD` would have a chance to trigger (on key down+up). `PERMISSIVE_HOLD` is therefore redundant for keys where `get_hold_on_other_key_press()` returns `true`.
-
-In Selenium QMK, `get_hold_on_other_key_press()` (Selenium's implementation of the QMK native callback) returns `true` for non-text keys and `false` for text keys. Combined with global `PERMISSIVE_HOLD`, this yields:
-
-| Key type                                      | `HOLD_ON_OTHER_KEY_PRESS` | `PERMISSIVE_HOLD`    | Effective behavior                               |
-| --------------------------------------------- | ------------------------- | -------------------- | ------------------------------------------------ |
-| **Non-text** (Enter, Escape, Del, layer-taps) | `true` (active)           | active but redundant | Hold on any key down (immediate)                 |
-| **Text** (HRM letters, Space)                 | `false` (inactive)        | active               | Hold on nested keypress (down+up); rolling = tap |
+| Key type                                      | `HOLD_ON_OTHER_KEY_PRESS` | Effective behavior                                      |
+| --------------------------------------------- | ------------------------- | ------------------------------------------------------- |
+| **Non-text** (Enter, Escape, Del, layer-taps) | `true` (active)           | Hold on any key down (immediate)                        |
+| **Text** (HRM letters, Space)                 | `false` (inactive)        | Hold only on tapping term expiry (300ms); rolling = tap |
 
 ### Mapping ZMK native `flavor` values to QMK native flags
 
-ZMK's `flavor` property is a per-behavior setting on hold-tap definitions. QMK has no `flavor` concept — instead, the equivalent logic is achieved through global flags and per-key callbacks. The following table maps ZMK native `flavor` values to their closest QMK native equivalents:
-
-| ZMK native `flavor` value | Decision trigger                                              | QMK native equivalent                                     |
-| ------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
-| `tap-preferred`           | Hold only on tapping term expiry; interrupts ignored          | QMK default (no flags)                                    |
-| `hold-preferred`          | Hold on tapping term expiry; tap only on release before term  | QMK default (no flags) — same trigger for hold resolution |
-| `balanced`                | Hold when another key is pressed **and released** during hold | `PERMISSIVE_HOLD`                                         |
-| `tap-unless-interrupted`  | Tap unless another key is pressed before tapping term         | Not used by Selenium                                      |
-| — (no ZMK equivalent)     | Hold when another key is pressed (down only)                  | `HOLD_ON_OTHER_KEY_PRESS`                                 |
-
-ZMK native `balanced` and QMK native `PERMISSIVE_HOLD` share the same trigger: a complete nested keypress resolves as hold. Selenium's ZMK config does not use `balanced`, but `PERMISSIVE_HOLD` provides this behavior in QMK for the text keys (HRM, Space).
-
-QMK native `HOLD_ON_OTHER_KEY_PRESS` has no ZMK native equivalent — it is stricter than ZMK's `hold-preferred`, which only uses the tapping term timer and ignores interrupts entirely.
+| ZMK native `flavor` value | Decision trigger                                              | QMK native equivalent        |
+| ------------------------- | ------------------------------------------------------------- | ---------------------------- |
+| `tap-preferred`           | Hold only on tapping term expiry; interrupts ignored          | QMK default (no flags)       |
+| `hold-preferred`          | Hold on tapping term expiry; tap only on release before term  | QMK default (no flags)       |
+| `balanced`                | Hold when another key is pressed **and released** during hold | `PERMISSIVE_HOLD` (not used) |
+| `tap-unless-interrupted`  | Tap unless another key is pressed before tapping term         | Not used by Selenium         |
+| — (no ZMK equivalent)     | Hold when another key is pressed (down only)                  | `HOLD_ON_OTHER_KEY_PRESS`    |
 
 ### Why this combination fits Selenium
 
-Selenium's core insight is that homerow-mods and thumb modifiers have mutually exclusive goals. The two QMK native flags map cleanly to Selenium's per-behavior split:
+Selenium's core insight is that homerow-mods and thumb modifiers have mutually exclusive goals:
 
-1. **Non-text thumb keys (Enter, Escape, layer-taps)** get `HOLD_ON_OTHER_KEY_PRESS`. These keys use Selenium ZMK's `&sc` behavior (`hold-preferred` flavor). They almost always want hold when followed by another keypress. The immediate trigger on any key down matches the intent: you press a layer-tap then immediately press a key on that layer. With a 150ms tapping term, the practical difference with ZMK native `hold-preferred` is negligible — you almost always press another key while holding these, and 150ms expires near-instantly.
+1. **Non-text thumb keys (Enter, Escape, layer-taps)** get `HOLD_ON_OTHER_KEY_PRESS`. They almost always want hold when followed by another keypress. The immediate trigger on any key down matches the intent: you press a layer-tap then immediately press a key on that layer. With a 150ms tapping term, the practical difference with ZMK native `hold-preferred` is negligible.
 
-2. **Text keys (homerow mods, Space)** get `PERMISSIVE_HOLD` only. These keys use Selenium ZMK's `&hrm`/`&lt` behaviors (`tap-preferred` flavor). During fast typing, homerow keys overlap in a rolling pattern — the hold-tap key is released before the next key, which `PERMISSIVE_HOLD` correctly treats as a tap. But when you genuinely intend the hold (press HRM, press+release another key while HRM is still down), `PERMISSIVE_HOLD` detects the nested keypress and resolves as hold without waiting the full 300ms tapping term. This adds responsiveness to intentional modifier use while keeping accidental misfires safe.
+2. **Text keys (homerow mods, Space)** get **no flags** — pure QMK default behavior (hold only on tapping term expiry). This matches ZMK's `tap-preferred` flavor exactly: keypresses during the hold are ignored, and only the 300ms timer can trigger hold. The long tapping term is the safety mechanism — it ensures homerow-mods are never misfired during fast typing.
 
-3. **No per-key callback needed for `PERMISSIVE_HOLD`.** Because `HOLD_ON_OTHER_KEY_PRESS` already dominates on non-text keys, enabling `PERMISSIVE_HOLD` globally has no effect on those keys — it only adds behavior to text keys where it is wanted. This avoids the complexity of QMK native `PERMISSIVE_HOLD_PER_KEY` + a `get_permissive_hold()` callback while achieving the same per-behavior split.
+### Why PERMISSIVE_HOLD is not used
 
-### Why PERMISSIVE_HOLD is the right choice
+`PERMISSIVE_HOLD` is the QMK equivalent of ZMK's `balanced` flavor. The Selenium specification explicitly rejects this approach:
 
-A common objection to `PERMISSIVE_HOLD` is that it causes misfires: when typing fast, a nested keypress pattern (press HRM, press+release another key, release HRM) can accidentally trigger the hold action. This is a valid concern for configurations where the tapping term is short (e.g. 200ms) and the hold-tap key is a frequently-typed letter.
+> _"The common approach for compact keyboard keymaps is to use a single configuration (and timing) for all hold-taps, which is often a compromise between "tap-preferred" and "hold-preferred" (like QMK's "permissive hold"), and then rely on mitigating measures and fine timing adjustments to limit the number of typos. In our experience, this doesn't work reliably for most users and never will."_
 
-**Selenium's design makes this objection irrelevant.** The 300ms tapping term on text keys is deliberately long — the longest commonly used value. At this duration, the window for accidental nested keypresses is extremely wide, meaning the _only_ time a nested keypress occurs within 300ms is when you genuinely intend the modifier. Fast typists complete rolling keypresses well under 300ms, so they always resolve as tap.
+The practical problem: during fast typing, finger release order is not deterministic. Redirects (same-hand direction changes like "ANES" on Ergol) and uneven finger speeds can cause a nested keypress pattern (key B pressed and released while key A is still held) even when the typist intends two separate taps. `PERMISSIVE_HOLD` would interpret this as an intentional modifier activation, causing misfires.
 
-Without `PERMISSIVE_HOLD`, the only way to trigger hold would be to physically hold the key for the full 300ms — nearly a third of a second of dead time before the modifier activates. This makes intentional modifier use sluggish and frustrating: you press Ctrl+C and nothing happens for 300ms. `PERMISSIVE_HOLD` eliminates this latency by detecting the intent from the keypress pattern instead of waiting for the timer.
-
-The combination of a long tapping term (300ms) + `PERMISSIVE_HOLD` gives Selenium the best of both worlds:
-
-- **Safe typing**: the long term makes accidental holds near-impossible during normal text entry
-- **Responsive modifiers**: intentional holds resolve instantly via the nested keypress pattern, without waiting for the timer
-- **Rolling tolerance**: rolling keypresses (the most common fast-typing pattern) still resolve as tap, because the HRM key is released before the other key
-
-Critically, `PERMISSIVE_HOLD` is only safe here because it works in conjunction with `HOLD_ON_OTHER_KEY_PRESS_PER_KEY`. Using `PERMISSIVE_HOLD` alone on _all_ keys would be problematic — it could cause misfires on layer-taps and other non-text hold-taps where you want immediate, unconditional hold behavior. But because `HOLD_ON_OTHER_KEY_PRESS` already claims the non-text keys (where it dominates), `PERMISSIVE_HOLD` is effectively scoped to text keys only — the keys with the long 300ms tapping term where it is safe. The two flags complement each other: `HOLD_ON_OTHER_KEY_PRESS` provides immediate hold for non-text keys, `PERMISSIVE_HOLD` provides responsive hold for text keys, and neither interferes with the other.
-
-Dropping `PERMISSIVE_HOLD` while keeping the 300ms tapping term would force users to wait 300ms for every intentional modifier activation. Lowering the tapping term to compensate would reintroduce the misfires that the long term was designed to prevent. Neither trade-off is acceptable — `PERMISSIVE_HOLD` with a long tapping term is the only configuration that satisfies both constraints simultaneously.
+The trade-off of not using `PERMISSIVE_HOLD`: intentional modifier use requires holding the key for the full 300ms. This is slower, but it is the conscious design choice that Selenium makes — safety over responsiveness. The 300ms tapping term is the only mechanism that resolves hold, and no keypress pattern can trigger it earlier.
 
 ### Remaining gap: ZMK native `hold-preferred` vs QMK native `HOLD_ON_OTHER_KEY_PRESS`
 
@@ -160,19 +127,9 @@ QMK native `HOLD_ON_OTHER_KEY_PRESS` resolves hold immediately on any key down, 
 
 This means Selenium QMK's non-text keys (which use `HOLD_ON_OTHER_KEY_PRESS`) behave slightly differently from their Selenium ZMK counterparts (which use `&sc` / `&mt` with `hold-preferred` flavor).
 
-#### Explored option: exact ZMK `hold-preferred` in QMK
+#### Why not use QMK default (no flags) for non-text keys instead?
 
-QMK's **default** behavior (no `HOLD_ON_OTHER_KEY_PRESS`, no `PERMISSIVE_HOLD`) is actually an exact match for ZMK native `hold-preferred` — hold triggers purely on tapping term expiry. To achieve an exact match while keeping `PERMISSIVE_HOLD` for text keys, we would need to:
-
-1. Remove `HOLD_ON_OTHER_KEY_PRESS_PER_KEY` (or make `get_hold_on_other_key_press()` return `false` for all keys)
-2. Replace global `PERMISSIVE_HOLD` with `PERMISSIVE_HOLD_PER_KEY`
-3. Add a `get_permissive_hold()` callback returning `true` only for text-producing keys (HRMs), `false` for non-text keys
-
-This would give non-text keys pure tapping-term behavior (exact ZMK native `hold-preferred`) while keeping `PERMISSIVE_HOLD` for HRMs.
-
-#### Decision
-
-Not implemented. With a 150ms tapping term on non-text keys, the difference is near-impossible to trigger in practice: you almost always press another key while holding a layer-tap, and 150ms expires almost immediately. The edge case (holding a layer-tap alone for 50-149ms while another key happens to be pressed at the same moment) is extremely unlikely in real typing. The current approach (`HOLD_ON_OTHER_KEY_PRESS` for non-text + global `PERMISSIVE_HOLD`) achieves the per-behavior split with less code than the alternative.
+QMK's **default** behavior (no flags) is actually an exact match for ZMK native `hold-preferred` — hold triggers purely on tapping term expiry. However, with a 150ms tapping term on non-text keys, the practical difference is negligible: you almost always press another key while holding a layer-tap, and 150ms expires near-instantly. The edge case (holding a layer-tap alone for 50-149ms while another key happens to be pressed at the same moment) is extremely unlikely in real typing. `HOLD_ON_OTHER_KEY_PRESS` provides slightly faster response for the common case with no meaningful downside.
 
 ## Selenium ZMK behaviors without exact QMK equivalent
 
@@ -295,7 +252,7 @@ In Selenium ZMK, `SYM_NUM_LAYER` uses Selenium macro `EZ_SL(NUM_LAYER)` — a ho
 
 In Selenium QMK, we use QMK native `OSL(_SE_NUM)` which provides the same tap=one-shot / hold=momentary behavior. `_SE_NUM` resolves to `_num_row` when `VIM_NAVIGATION` is enabled, `_num_nav` otherwise — matching the Selenium specification's layer routing.
 
-**Exception**: for `HT_TWO_THUMB_KEYS`, Selenium ZMK uses Selenium custom `&sc NUM_NAV_LAYER CAPSLOCK` — a `hold-preferred` hold-tap with CapsLock on tap. In Selenium QMK, we use QMK native `LT(_SE_NUM, KC_CAPS)` which approximates this but uses QMK's default tap-preferred behavior (since `LT()` doesn't support hold-preferred). The one-shot behavior from `OSL()` is lost in this specific variant because `LT()` sends the tap keycode (CapsLock) instead of activating a one-shot layer.
+**Exception**: for `HT_TWO_THUMB_KEYS`, Selenium ZMK uses Selenium custom `&sc NUM_NAV_LAYER CAPSLOCK` — a `hold-preferred` hold-tap with CapsLock on tap. In Selenium QMK, we use QMK native `LT(_SE_NUM, KC_CAPS)`. Since `KC_CAPS` is not a text-producing key, `get_hold_on_other_key_press()` returns `true`, making it effectively hold-preferred — matching the ZMK behavior. The only difference is that the one-shot behavior from `OSL()` is lost in this variant because `LT()` sends the tap keycode (CapsLock) instead of activating a one-shot layer.
 
 ## Configurable options
 

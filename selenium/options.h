@@ -72,3 +72,12 @@
 // Beware: this increases the typing load of the left thumb.
 
 // #define LEFT_HAND_SPACE
+
+// PERMISSIVE_HOLD can feel like extra comfort for experienced users, but it
+// will be an absolute pain if you are learning home-row-mods. It causes
+// misfires during fast typing (especially on redirects and uneven finger
+// rolls), and tuning it away is a dead end — the Selenium specification
+// explicitly rejects this approach. Disabled by default for good reason.
+// Do NOT activate this and then conclude that HRMs "don't work well".
+
+// #define PERMISSIVE_HOLD
