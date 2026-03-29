@@ -1,8 +1,8 @@
 # Selenium QMK Implementation
 
-This is a QMK implementation of [Selenium](https://github.com/OneDeadKey/selenium), based on the [ZMK source of truth](https://github.com/OneDeadKey/zmk-config-selenium).
+This is a QMK implementation of the [Selenium specification](https://github.com/OneDeadKey/selenium). The [ZMK implementation](https://github.com/OneDeadKey/zmk-config-selenium) was used as a practical cross-reference during development, but the spec is the authority.
 
-QMK and ZMK don't offer the same features. This document explains how the conversion was handled.
+QMK and ZMK don't offer the same features. This document explains the design decisions and platform differences.
 
 ### Terminology
 
@@ -33,11 +33,11 @@ Selenium's ZMK config defines custom behaviors (`&hrm`, `&sc`, `bsl`, `bsk`, `lb
 
 QMK natively provides one global `TAPPING_TERM` plus optional per-key callback functions (`TAPPING_TERM_PER_KEY`, `QUICK_TAP_TERM_PER_KEY`). Selenium QMK uses these callbacks to replicate the per-behavior timing from the ZMK config:
 
-| Setting                    | Value | How                                                                            |
-| -------------------------- | ----- | ------------------------------------------------------------------------------ |
-| `TAPPING_TERM`             | 150ms | QMK native global default (set in `options.h` as `SHORT_TAPPING_TERM`)          |
-| `ARSENIK_HRM_TAPPING_TERM` | 300ms | Selenium QMK constant, returned by `get_tapping_term()` for tap-preferred keys |
-| `QUICK_TAP`                | 200ms | Selenium QMK constant, returned by `get_quick_tap_term()` for all keys         |
+| Setting            | Value | How                                                                            |
+| ------------------ | ----- | ------------------------------------------------------------------------------ |
+| `TAPPING_TERM`     | 150ms | QMK native global default (set in `options.h` as `SHORT_TAPPING_TERM`)         |
+| `HRM_TAPPING_TERM` | 300ms | Selenium QMK constant, returned by `get_tapping_term()` for tap-preferred keys |
+| `QUICK_TAP`        | 200ms | Selenium QMK constant, returned by `get_quick_tap_term()` for all keys         |
 
 The split is driven by `tap_keycode_is_tap_preferred()` (Selenium QMK helper), which returns `true` for keycodes that correspond to Selenium ZMK's `&hrm`/`&lt` behaviors:
 
@@ -46,13 +46,13 @@ The split is driven by `tap_keycode_is_tap_preferred()` (Selenium QMK helper), w
 
 The result:
 
-- **Tap-preferred keys** → `get_tapping_term()` returns 300ms, `get_hold_on_other_key_press()` returns `false`, global `PERMISSIVE_HOLD` active
-- **Hold-preferred keys** → `get_tapping_term()` returns 150ms, `get_hold_on_other_key_press()` returns `true`, global `PERMISSIVE_HOLD` active but redundant (dominated by `HOLD_ON_OTHER_KEY_PRESS`)
+- **Tap-preferred keys** (HRM letters, Space) → `get_tapping_term()` returns 300ms, `get_hold_on_other_key_press()` returns `false`, global `PERMISSIVE_HOLD` active
+- **Hold-preferred keys** (Enter, Escape, Del, layer-taps) → `get_tapping_term()` returns 150ms, `get_hold_on_other_key_press()` returns `true`, global `PERMISSIVE_HOLD` active but redundant (dominated by `HOLD_ON_OTHER_KEY_PRESS`)
 
 ### How the mapping works
 
 - `TAPPING_TERM = 150` is set as the global default (short, for hold-preferred keys).
-- `TAPPING_TERM_PER_KEY` is enabled, and `get_tapping_term()` returns `ARSENIK_HRM_TAPPING_TERM` (300ms) for text-producing keys and `TAPPING_TERM` (150ms) for everything else.
+- `TAPPING_TERM_PER_KEY` is enabled, and `get_tapping_term()` returns `HRM_TAPPING_TERM` (300ms) for text-producing keys and `TAPPING_TERM` (150ms) for everything else.
 - For `QUICK_TAP`: QMK's `action_tapping.h` unconditionally redefines `QUICK_TAP_TERM = TAPPING_TERM` unless `QUICK_TAP_TERM_PER_KEY` is defined. We define `QUICK_TAP_TERM_PER_KEY` and provide `get_quick_tap_term()` returning 200ms.
 
 | Selenium ZMK behavior      | Selenium QMK equivalent                                       | Match                                                     |
@@ -68,7 +68,7 @@ ZMK natively attaches a `flavor` property to each hold-tap behavior definition. 
 
 QMK has no per-behavior system. Instead, QMK natively provides global flags (`PERMISSIVE_HOLD`, `HOLD_ON_OTHER_KEY_PRESS`) with optional per-key callbacks that apply uniformly to all hold-tap keys — or selectively when the `_PER_KEY` variant is enabled. These are documented in [QMK's tap-hold docs](https://docs.qmk.fm/tap_hold).
 
-Selenium QMK uses two QMK native flags in combination (`options.h`):
+Selenium QMK uses two QMK native flags in combination (`config.h`):
 
 ```c
 #define PERMISSIVE_HOLD
@@ -133,6 +133,24 @@ Selenium's core insight is that homerow-mods and thumb modifiers have mutually e
 2. **Text keys (homerow mods, Space)** get `PERMISSIVE_HOLD` only. These keys use Selenium ZMK's `&hrm`/`&lt` behaviors (`tap-preferred` flavor). During fast typing, homerow keys overlap in a rolling pattern — the hold-tap key is released before the next key, which `PERMISSIVE_HOLD` correctly treats as a tap. But when you genuinely intend the hold (press HRM, press+release another key while HRM is still down), `PERMISSIVE_HOLD` detects the nested keypress and resolves as hold without waiting the full 300ms tapping term. This adds responsiveness to intentional modifier use while keeping accidental misfires safe.
 
 3. **No per-key callback needed for `PERMISSIVE_HOLD`.** Because `HOLD_ON_OTHER_KEY_PRESS` already dominates on non-text keys, enabling `PERMISSIVE_HOLD` globally has no effect on those keys — it only adds behavior to text keys where it is wanted. This avoids the complexity of QMK native `PERMISSIVE_HOLD_PER_KEY` + a `get_permissive_hold()` callback while achieving the same per-behavior split.
+
+### Why PERMISSIVE_HOLD is the right choice
+
+A common objection to `PERMISSIVE_HOLD` is that it causes misfires: when typing fast, a nested keypress pattern (press HRM, press+release another key, release HRM) can accidentally trigger the hold action. This is a valid concern for configurations where the tapping term is short (e.g. 200ms) and the hold-tap key is a frequently-typed letter.
+
+**Selenium's design makes this objection irrelevant.** The 300ms tapping term on text keys is deliberately long — the longest commonly used value. At this duration, the window for accidental nested keypresses is extremely wide, meaning the _only_ time a nested keypress occurs within 300ms is when you genuinely intend the modifier. Fast typists complete rolling keypresses well under 300ms, so they always resolve as tap.
+
+Without `PERMISSIVE_HOLD`, the only way to trigger hold would be to physically hold the key for the full 300ms — nearly a third of a second of dead time before the modifier activates. This makes intentional modifier use sluggish and frustrating: you press Ctrl+C and nothing happens for 300ms. `PERMISSIVE_HOLD` eliminates this latency by detecting the intent from the keypress pattern instead of waiting for the timer.
+
+The combination of a long tapping term (300ms) + `PERMISSIVE_HOLD` gives Selenium the best of both worlds:
+
+- **Safe typing**: the long term makes accidental holds near-impossible during normal text entry
+- **Responsive modifiers**: intentional holds resolve instantly via the nested keypress pattern, without waiting for the timer
+- **Rolling tolerance**: rolling keypresses (the most common fast-typing pattern) still resolve as tap, because the HRM key is released before the other key
+
+Critically, `PERMISSIVE_HOLD` is only safe here because it works in conjunction with `HOLD_ON_OTHER_KEY_PRESS_PER_KEY`. Using `PERMISSIVE_HOLD` alone on _all_ keys would be problematic — it could cause misfires on layer-taps and other non-text hold-taps where you want immediate, unconditional hold behavior. But because `HOLD_ON_OTHER_KEY_PRESS` already claims the non-text keys (where it dominates), `PERMISSIVE_HOLD` is effectively scoped to text keys only — the keys with the long 300ms tapping term where it is safe. The two flags complement each other: `HOLD_ON_OTHER_KEY_PRESS` provides immediate hold for non-text keys, `PERMISSIVE_HOLD` provides responsive hold for text keys, and neither interferes with the other.
+
+Dropping `PERMISSIVE_HOLD` while keeping the 300ms tapping term would force users to wait 300ms for every intentional modifier activation. Lowering the tapping term to compensate would reintroduce the misfires that the long term was designed to prevent. Neither trade-off is acceptable — `PERMISSIVE_HOLD` with a long tapping term is the only configuration that satisfies both constraints simultaneously.
 
 ### Remaining gap: ZMK native `hold-preferred` vs QMK native `HOLD_ON_OTHER_KEY_PRESS`
 
@@ -275,13 +293,13 @@ This tap action is **not implemented** in Selenium QMK. QMK defines the HID cons
 
 In Selenium ZMK, `SYM_NUM_LAYER` uses Selenium macro `EZ_SL(NUM_LAYER)` — a hold-tap where tap activates the number layer as one-shot (type one number, return to symbols) and hold keeps it active momentarily.
 
-In Selenium QMK, we use QMK native `OSL(_num_nav)` which provides the same tap=one-shot / hold=momentary behavior.
+In Selenium QMK, we use QMK native `OSL(_SE_NUM)` which provides the same tap=one-shot / hold=momentary behavior. `_SE_NUM` resolves to `_num_row` when `VIM_NAVIGATION` is enabled, `_num_nav` otherwise — matching the Selenium specification's layer routing.
 
-**Exception**: for `HT_TWO_THUMB_KEYS`, Selenium ZMK uses Selenium custom `&sc NUM_NAV_LAYER CAPSLOCK` — a `hold-preferred` hold-tap with CapsLock on tap. In Selenium QMK, we use QMK native `LT(_num_nav, KC_CAPS)` which approximates this but uses QMK's default tap-preferred behavior (since `LT()` doesn't support hold-preferred). The one-shot behavior from `OSL()` is lost in this specific variant because `LT()` sends the tap keycode (CapsLock) instead of activating a one-shot layer.
+**Exception**: for `HT_TWO_THUMB_KEYS`, Selenium ZMK uses Selenium custom `&sc NUM_NAV_LAYER CAPSLOCK` — a `hold-preferred` hold-tap with CapsLock on tap. In Selenium QMK, we use QMK native `LT(_SE_NUM, KC_CAPS)` which approximates this but uses QMK's default tap-preferred behavior (since `LT()` doesn't support hold-preferred). The one-shot behavior from `OSL()` is lost in this specific variant because `LT()` sends the tap keycode (CapsLock) instead of activating a one-shot layer.
 
 ## Configurable options
 
-All options from the ZMK implementation are available in `options.h`:
+All options from the Selenium specification are available in `options.h`:
 
 - **Hold-tap configs**: `HT_NONE`, `HT_THUMB_TAPS`, `HT_HOME_ROW_MODS` (default), `HT_TWO_THUMB_KEYS`
 - **VIM_NAVIGATION**: splits num-nav into vim-style navigation + number row layers

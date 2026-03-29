@@ -1,4 +1,4 @@
-// Selenium keymap for QMK — converted from the ZMK Selenium keymap
+// Selenium keymap for QMK
 // https://github.com/OneDeadKey/selenium
 
 /******************************************************************************

@@ -35,9 +35,13 @@ qmk info -kb <keyboard_model>
 Then configure it (replace `beekeeb/piantor` with your model):
 
 ```bash
+# set your config values
 qmk config user.keyboard=beekeeb/piantor
 qmk config user.keymap=default
 qmk config user.qmk_home=$HOME/qmk_firmware
+
+# check your config
+qmk config
 ```
 
 ### 3. Clone this repository

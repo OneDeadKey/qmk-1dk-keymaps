@@ -32,7 +32,7 @@ enum custom_keycodes {
     BSL_SYM,            // EZ_SL(SYMBOLS): hold=momentary, tap=one-shot _symbols
 };
 
-// Converted from the Selenium ZMK keymap (zmk-keyboard-quacken).
+// QMK implementation of the Selenium specification.
 // Thumb keys are configurable via HT_*, VIM_NAVIGATION, and LEFT_HAND_SPACE
 // options in options.h. See internals.h for the thumb key definitions.
 // clang-format off
