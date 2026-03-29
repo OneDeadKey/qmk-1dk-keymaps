@@ -49,11 +49,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     // 0. Base layer
     [_base] = SELENIUM_LAYOUT(
-        KC_TAB,   KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,        KC_Y,  KC_U,   KC_I,     KC_O,    KC_P,     KC_BSPC,
-        KC_ESC,   KC_AA,  KC_SS,  KC_DD,  KC_FF,  KC_G,        KC_H,  KC_JJ,  KC_KK,    KC_LL,   KC_SCSC,  KC_ENT,
-        KC_LSFT,  KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,        KC_N,  KC_M,   KC_COMM,  KC_DOT,  KC_SLSH,  KC_RSFT,
+        OC_TL,    KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,        KC_Y,  KC_U,   KC_I,     KC_O,    KC_P,     OC_TR,
+        OC_ML,    KC_AA,  KC_SS,  KC_DD,  KC_FF,  KC_G,        KC_H,  KC_JJ,  KC_KK,    KC_LL,   KC_SCSC,  OC_MR,
+        OC_BL,    KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,        KC_N,  KC_M,   KC_COMM,  KC_DOT,  KC_SLSH,  OC_BR,
 
-                 AS_TL_TUCK,  AS_TL_HOME,  AS_TL_REACH,        AS_TR_REACH,  AS_TR_HOME,  AS_TR_TUCK
+               AS_TL_TUCK,  AS_TL_HOME,  AS_TL_REACH,        AS_TR_REACH,  AS_TR_HOME,  AS_TR_TUCK
     ),
 
     // 1. NumLock layer -- sticky NavNum that stays on until deactivated

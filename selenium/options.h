@@ -90,3 +90,18 @@
 // Do NOT activate this and then conclude that HRMs "don't work well".
 
 // #define PERMISSIVE_HOLD
+
+/******************************************************************************
+ * Outer Column Keys (42-key boards only)
+ ******************************************************************************/
+
+// On 42-key boards (e.g. Quacken, Corne), these define the 6th column keys on the
+// base layer. Ignored on smaller boards where the outer column doesn't exist.
+// Uncomment and edit to customize. Defaults match the Selenium specification.
+
+// #define OC_TL  KC_TAB
+// #define OC_TR  KC_BSPC
+// #define OC_ML  KC_ESC
+// #define OC_MR  KC_ENT
+// #define OC_BL  KC_LSFT
+// #define OC_BR  KC_RSFT
