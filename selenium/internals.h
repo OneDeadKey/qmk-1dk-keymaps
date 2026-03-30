@@ -145,3 +145,27 @@
 #    endif
 
 #endif
+
+// ╭─────────────────────────────────────────────────────────╮
+// │       Outer column keys (42-key boards only)            │
+// ╰─────────────────────────────────────────────────────────╯
+// Defaults match the Selenium specification. Override in options.h.
+
+#ifndef OC_TL
+#    define OC_TL KC_TAB
+#endif
+#ifndef OC_TR
+#    define OC_TR KC_BSPC
+#endif
+#ifndef OC_ML
+#    define OC_ML KC_ESC
+#endif
+#ifndef OC_MR
+#    define OC_MR KC_ENT
+#endif
+#ifndef OC_BL
+#    define OC_BL KC_LSFT
+#endif
+#ifndef OC_BR
+#    define OC_BR KC_RSFT
+#endif
