@@ -8,10 +8,12 @@
 #define SYMBOLS_T(keycode) LT(_symbols, keycode)
 
 // Currency symbol (S_MONEY equivalent from ZMK aliases — locale-dependent)
-#if defined KB_LAYOUT_ERGOL
-#    define AS_MONEY S(KC_1) // € on Ergol
+#if defined KB_LAYOUT_ERGOL || defined KB_LAYOUT_ERGLACE
+#    define AS_MONEY S(KC_1) // € on Ergol/Erglace
 #elif defined KB_LAYOUT_AZERTY
 #    define AS_MONEY ALGR(KC_E) // € on AZERTY
+#elif defined KB_LAYOUT_BEPO
+#    define AS_MONEY BP_EURO // € on Bepo
 #else
 #    define AS_MONEY AS(DLR) // $ on QWERTY/Lafayette
 #endif

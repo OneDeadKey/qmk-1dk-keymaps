@@ -32,6 +32,14 @@
 #    define ODK3_SEQUENCE tap_code(EL_ODK); tap_code(KC_3)
 #    define ODK4_SEQUENCE tap_code(EL_ODK); tap_code(KC_4)
 #    define ODK5_SEQUENCE tap_code(EL_ODK); tap_code(KC_5)
+#elif defined KB_LAYOUT_ERGLACE
+#    define AS(stripped_keycode) EG_##stripped_keycode
+#    include "keymap_erglace.h"
+#    define ODK1_SEQUENCE tap_code(EG_ODK); tap_code(KC_1)
+#    define ODK2_SEQUENCE tap_code(EG_ODK); tap_code(KC_2)
+#    define ODK3_SEQUENCE tap_code(EG_ODK); tap_code(KC_3)
+#    define ODK4_SEQUENCE tap_code(EG_ODK); tap_code(KC_4)
+#    define ODK5_SEQUENCE tap_code(EG_ODK); tap_code(KC_5)
 #elif defined KB_LAYOUT_BEPO
 #    define AS(stripped_keycode) BP_##stripped_keycode
 #    define SHIFTED_NUMBERS

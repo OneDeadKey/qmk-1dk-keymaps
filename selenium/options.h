@@ -11,6 +11,8 @@
 // #define KB_LAYOUT_QWERTY_LAFAYETTE
 // #define KB_LAYOUT_AZERTY
 #define KB_LAYOUT_ERGOL
+// #define KB_LAYOUT_ERGLACE
+// #define KB_LAYOUT_BEPO
 
 // Uncomment the following line if using a Mac:
 
