@@ -77,9 +77,9 @@
 #    define _SE_S34   _num_row
 #    define _SE_REACH KC_ESC
 #else
-#    define _SE_NAV   _num_nav
-#    define _SE_EXTRA _function
-#    define _SE_S34   _num_nav
+#    define _SE_NAV   _nav_num
+#    define _SE_EXTRA _fn_media
+#    define _SE_S34   _nav_num
 #    define _SE_REACH KC_TAB
 #endif
 
@@ -88,7 +88,7 @@
 #ifdef VIM_NAVIGATION
 #    define _SE_NUM _num_row
 #else
-#    define _SE_NUM _num_nav
+#    define _SE_NUM _nav_num
 #endif
 
 // MO() instead of OSL() to avoid QMK's OSL nesting bug with OSL(_symbols).

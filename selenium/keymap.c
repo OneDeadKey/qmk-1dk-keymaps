@@ -16,9 +16,9 @@ enum arsenik_layers {
     _num_lock,
     _symbols,
     _vim_nav,
-    _num_nav,
+    _nav_num,
     _num_row,
-    _function,
+    _fn_media,
 };
 
 enum custom_keycodes {
@@ -47,14 +47,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                  AS_TL_TUCK,  AS_TL_HOME,  AS_TL_REACH,        AS_TR_REACH,  AS_TR_HOME,  AS_TR_TUCK
     ),
 
-    // 1. NumLock layer -- sticky NumNav that stays on until deactivated
+    // 1. NumLock layer -- sticky NavNum that stays on until deactivated
     [_num_lock] = ONEDEADKEY_LAYOUT(
         __,  __,        __,        __,        __,        __,              __,         __,     __,     __,     __,        __,
         __,  KC_ESC,    KC_HOME,   KC_UP,     KC_END,    KC_PGUP,         TO(_base),  AS(7),  AS(8),  AS(9),  AS(SLSH),  __,
         __,  AS(EQL),   KC_LEFT,   KC_DOWN,   KC_RGHT,   KC_PGDN,         AS(MINS),   AS(4),  AS(5),  AS(6),  AS(0),     __,
         __,  AS_MONEY,  AS(COLN),  AS(ASTR),  AS(PLUS),  AS(PERC),        AS(COMM),   AS(1),  AS(2),  AS(3),  AS(DOT),   __,
 
-                              __,  LT(_num_nav, KC_BSPC),  KC_TAB,        __,  LT(_num_nav, KC_SPC),  OSL(_symbols)
+                              __,  LT(_nav_num, KC_BSPC),  KC_TAB,        __,  LT(_nav_num, KC_SPC),  OSL(_symbols)
     ),
 
     // 2. Symbols layer -- programming symbols (AltGr layer for Ergol)
@@ -74,17 +74,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         __,  SC_ALL,   SC_SAVE,   S(KC_TAB),   KC_TAB,      XX,             KC_LEFT,  KC_DOWN,  KC_UP,    KC_RGHT,  XX,      __,
         __,  SC_UNDO,  SC_CUT,    SC_COPY,     SC_PASTE,    SC_REDO,        XX,       XX,       XX,       XX,       XX,      __,
 
-                     KC_CAPS,  LT(_function, KC_DEL),  MO(_num_row),        __,  MO(_function),  LSK_RALT
+                     KC_CAPS,  LT(_fn_media, KC_DEL),  MO(_num_row),        __,  MO(_fn_media),  LSK_RALT
     ),
 
-    // 4. NumNav layer -- inverted T navigation + numpad
-    [_num_nav] = ONEDEADKEY_LAYOUT(
+    // 4. NavNum layer -- inverted T navigation + numpad
+    [_nav_num] = ONEDEADKEY_LAYOUT(
         __,  __,       __,       __,       __,        __,             __,             __,     __,     __,     __,        __,
         __,  KC_ESC,   KC_HOME,  KC_UP,    KC_END,    KC_PGUP,        TO(_num_lock),  AS(7),  AS(8),  AS(9),  AS(SLSH),  __,
         __,  SC_ALL,   KC_LEFT,  KC_DOWN,  KC_RGHT,   KC_PGDN,        AS(MINS),       AS(4),  AS(5),  AS(6),  AS(0),     __,
         __,  SC_UNDO,  SC_CUT,   SC_COPY,  SC_PASTE,  SC_REDO,        AS(COMM),       AS(1),  AS(2),  AS(3),  AS(DOT),   __,
 
-                  KC_CAPS,  LT(_function, KC_DEL),  S(KC_TAB),        KC_ESC,  LT(_function, KC_SPC),  LSK_RALT
+                  KC_CAPS,  LT(_fn_media, KC_DEL),  S(KC_TAB),        KC_ESC,  LT(_fn_media, KC_SPC),  LSK_RALT
     ),
 
     // 5. NumRow layer -- numbers on homerow (not accessible by default)
@@ -97,8 +97,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                __,  S(KC_SPC),  __,        __,  S(KC_SPC),  KC_RALT
     ),
 
-    // 6. Function layer -- F1..12 + media controls + modifiers on right homerow
-    [_function] = ONEDEADKEY_LAYOUT(
+    // 6. FnMedia layer -- F1..12 + media controls + modifiers on right homerow
+    [_fn_media] = ONEDEADKEY_LAYOUT(
         __,  __,     __,      __,      __,      __,        __,  __,               __,               __,       __,               __,
         __,  KC_F1,  KC_F2,   KC_F3,   KC_F4,   XX,        XX,  KC_MPRV,          KC_VOLU,          KC_BRIU,  KC_SCRL,          __,
         __,  KC_F5,  KC_F6,   KC_F7,   KC_F8,   XX,        XX,  LALT_T(KC_MPLY),  RCTL_T(KC_MUTE),  KC_RGUI,  LSFT_T(KC_PSCR),  __,
@@ -122,8 +122,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     // NOTE: Insecable space (Shift+Space for Ergol) is NOT implemented.
-    // The base layer space uses LT(_num_nav, KC_SPC), which shares the same
-    // keycode as the NumLock/NumNav space — making it impossible to distinguish
+    // The base layer space uses LT(_nav_num, KC_SPC), which shares the same
+    // keycode as the NumLock/NavNum space — making it impossible to distinguish
     // which layer the tap originated from. See IMPLEMENTATION.md for details.
 
     if (record->event.pressed) {
