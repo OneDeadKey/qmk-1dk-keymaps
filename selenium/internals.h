@@ -92,7 +92,7 @@
 #endif
 
 // MO() instead of OSL() to avoid QMK's OSL nesting bug with OSL(_symbols).
-#if defined HT_TWO_THUMB_KEYS
+#if defined HT_TWO_THUMB_KEYS && !defined VIM_NAVIGATION
 #    define SYM_NUM_LAYER LT(_SE_NUM, KC_CAPS)
 #else
 #    define SYM_NUM_LAYER MO(_SE_NUM)
@@ -100,22 +100,28 @@
 
 // Thumb key definitions
 #if defined HT_NONE
-#    define AS_TL_TUCK  _ALT
-#    define AS_TL_HOME  _CTL
-#    define AS_TL_REACH _GUI
+#    define AS_TL_TUCK KC_LALT
+#    ifdef MAC_MODIFIERS
+#        define AS_TL_HOME  KC_LGUI
+#        define AS_TL_REACH KC_LCTL
+#    else
+#        define AS_TL_HOME  KC_LCTL
+#        define AS_TL_REACH KC_LGUI
+#    endif
 #    define AS_TR_REACH MO(_SE_NAV)
 #    define AS_TR_HOME  KC_SPC
 #    define AS_TR_TUCK  MO(_symbols)
 
 #elif defined HT_THUMB_TAPS
-#    define AS_TL_TUCK  OSM(MOD_LSFT)
-#    define AS_TL_REACH _GUI_T(_SE_REACH)
+#    define AS_TL_TUCK OSM(MOD_LSFT)
 #    ifdef MAC_MODIFIERS
+#        define AS_TL_REACH LCTL_T(_SE_REACH)
 #        define AS_TR_REACH LGUI_T(KC_ENT)
 #    else
+#        define AS_TL_REACH LGUI_T(_SE_REACH)
 #        define AS_TR_REACH LALT_T(KC_ENT)
 #    endif
-#    define AS_TR_TUCK  OSL(_symbols)
+#    define AS_TR_TUCK OSL(_symbols)
 #    ifdef LEFT_HAND_SPACE
 #        define AS_TL_HOME _CTL_T(KC_SPC)
 #        define AS_TR_HOME LT(_SE_NAV, KC_BSPC)
