@@ -9,6 +9,10 @@
 
 ## Getting started
 
+### Prerequisites
+
+- `rsync` — required by `generator.sh` to assemble the keymap output
+
 ### 1. Install QMK
 
 Follow the [QMK getting started guide](https://docs.qmk.fm/newbs_getting_started) for your OS, then:
@@ -43,6 +47,8 @@ qmk config user.qmk_home=$HOME/qmk_firmware
 # check your config
 qmk config
 ```
+
+> **Warning:** for `user.qmk_home`, always use `$HOME` (not `~`). QMK stores the value literally and does not expand `~`, so `qmk config user.qmk_home=~/qmk_firmware` will break subsequent commands.
 
 ### 3. Clone this repository
 
