@@ -106,16 +106,19 @@ The keyboard enters flash mode differently depending on the board — check your
 ## Generator options
 
 ```bash
-./generator.sh -src <keymap_folder> [-kb <keyboard>] [-km <ref_keymap>] [-name <name>] [--copy]
+./generator.sh -src <keymap_folder> [-kb <keyboard>] [-km <ref_keymap>] [-layout <LAYOUT>] [-name <name>] [--copy]
 ```
 
-| Flag             | Description                                                        |
-| ---------------- | ------------------------------------------------------------------ |
-| `-src <path>`    | Path to the keymap source folder (required)                        |
-| `-kb <keyboard>` | Keyboard model (default: from `qmk config`)                        |
-| `-km <keymap>`   | Reference keymap for layout detection (default: from `qmk config`) |
-| `-name <name>`   | Name for the generated keymap (default: source folder name)        |
-| `--copy`, `-cp`  | Copy output to `$QMK_HOME` after generating                        |
+| Flag               | Description                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| `-src <path>`      | Path to the keymap source folder (required)                                          |
+| `-kb <keyboard>`   | Keyboard model (default: from `qmk config`)                                          |
+| `-km <keymap>`     | Reference keymap for layout auto-detection (default: from `qmk config`)              |
+| `-layout <LAYOUT>` | Explicit LAYOUT macro (e.g. `LAYOUT_split_3x6_3_ex2`). Skips detection; `-km` unused |
+| `-name <name>`     | Name for the generated keymap (default: source folder name)                          |
+| `--copy`, `-cp`    | Copy output to `$QMK_HOME` after generating                                          |
+
+Use `-layout` when the keyboard exposes multiple physical variants (e.g. `crkbd/rev4_0` has both `LAYOUT_split_3x6_3` and `LAYOUT_split_3x6_3_ex2`) and the reference keymap doesn't use the one you want.
 
 ## Formatting
 
@@ -131,6 +134,9 @@ qmk-layout-fmt selenium/keymap.c
 Compile tests verify that every valid config option combination builds successfully.
 
 ```bash
+# generator.sh -layout flag plumbing (fast, no compile)
+bash tests/test_layout_flag.sh
+
 # Per-option tests (~2 min)
 bash tests/test_per_option.sh
 

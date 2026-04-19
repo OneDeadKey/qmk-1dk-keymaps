@@ -24,10 +24,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Print usage and exit
 usage() {
-    echo "Usage: $0 -src <keymap_folder> [-kb <keyboard_model>] [-km <ref_keymap>] [-name <target_name>] [--copy|-cp]"
+    echo "Usage: $0 -src <keymap_folder> [-kb <keyboard_model>] [-km <ref_keymap>] [-layout <LAYOUT>] [-name <target_name>] [--copy|-cp]"
     echo "  -src <keymap_folder>   Path to the keymap source folder (required)"
     echo "  -kb <keyboard_model>   Specify the keyboard model (optional, will use qmk config if not provided)"
     echo "  -km <ref_keymap>       Reference keymap for layout detection (optional, will use qmk config if not provided)"
+    echo "  -layout <LAYOUT>       Explicit LAYOUT macro (e.g. LAYOUT_split_3x6_3_ex2); skips auto-detection from -km"
     echo "  -name <target_name>    Name for the generated keymap (default: source folder name)"
     echo "  --copy, -cp            Copy output to \$QMK_HOME/keyboards/<keyboard_model>/keymaps/<target_name>"
     exit 1
@@ -37,6 +38,7 @@ usage() {
 copy_keymap=false
 keyboard_model=""
 keymap=""
+layout_override=""
 src_path=""
 target_name=""
 
@@ -53,6 +55,10 @@ while [ "$#" -gt 0 ]; do
     -km)
         shift
         keymap="$1"
+        ;;
+    -layout)
+        shift
+        layout_override="$1"
         ;;
     -name)
         shift
@@ -84,19 +90,20 @@ if [ -z "$target_name" ]; then
     target_name="$(basename "$(cd "$src_path" && pwd)")"
 fi
 
-if [ -z "$keyboard_model" ] || [ -z "$keymap" ]; then
+if [ -z "$keyboard_model" ] || { [ -z "$keymap" ] && [ -z "$layout_override" ]; }; then
     log_info "Requirements: It is recommended to have set QMK user.keyboard, user.keymap, and user.qmk_home using 'qmk config'."
     log_info "See https://docs.qmk.fm/cli_configuration#setting-user-defaults for more information."
     log_info "Your current configuration:"
     qmk config || true
 fi
 
-# If keyboard_model or keymap is empty, get from qmk config
+# If keyboard_model is empty, get from qmk config
 if [ -z "$keyboard_model" ]; then
     keyboard_model=$(qmk config user.keyboard | awk -F= '{print $2}' | xargs)
     log_info "No keyboard_model provided with '-kb' argument, using value from qmk config: ${CYAN}$keyboard_model${NC}"
 fi
-if [ -z "$keymap" ]; then
+# -km is only needed when the layout must be auto-detected from a reference keymap
+if [ -z "$keymap" ] && [ -z "$layout_override" ]; then
     keymap=$(qmk config user.keymap | awk -F= '{print $2}' | xargs)
     log_info "No keymap provided with '-km' argument, using value from qmk config: ${CYAN}$keymap${NC}"
 fi
@@ -121,28 +128,46 @@ get_keymaps_folder() {
 }
 
 # Detect layout name
+# If $3 (override) is provided, skip auto-detection from the reference keymap.
 detect_layout_name() {
     local keyboard_model="$1"
     local keymap="$2"
-
-    local keymap_folder
-    keymap_folder=$(get_keymaps_folder "$keyboard_model" "$keymap")
+    local override="${3:-}"
 
     local layout=""
-    if [ -f "$keymap_folder/keymap.c" ]; then
-        layout=$(grep 'LAYOUT' "$keymap_folder/keymap.c" | sed 's/.*= \(.*\)(/\1/' | head -n 1)
-    elif [ -f "$keymap_folder/keymap.json" ]; then
-        layout=$(grep 'LAYOUT' "$keymap_folder/keymap.json" | sed 's/ *\"layout\": \"\(.*\)\",/\1/')
+    if [ -n "$override" ]; then
+        # Accept bare (split_3x6_3_ex2), LAYOUT_* or ONEDEADKEY_LAYOUT_* forms
+        layout="$override"
+    else
+        local keymap_folder
+        keymap_folder=$(get_keymaps_folder "$keyboard_model" "$keymap")
+
+        if [ -f "$keymap_folder/keymap.c" ]; then
+            layout=$(grep 'LAYOUT' "$keymap_folder/keymap.c" | sed 's/.*= \(.*\)(/\1/' | head -n 1)
+        elif [ -f "$keymap_folder/keymap.json" ]; then
+            layout=$(grep 'LAYOUT' "$keymap_folder/keymap.json" | sed 's/ *\"layout\": \"\(.*\)\",/\1/')
+        fi
+
+        if [ "$layout" = "LAYOUT" ]; then
+            layout+="_$(echo "$keyboard_model" | sed 's,/,_,g' | sed 's/_rev[0-9]*$//')"
+        fi
     fi
 
-    if [ "$layout" = "LAYOUT" ]; then
-        layout+="_$(echo "$keyboard_model" | sed 's,/,_,g' | sed 's/_rev[0-9]*$//')"
-    fi
-
-    # Prefix with ONEDEADKEY_ only if not already prefixed
-    if [[ "$layout" != ONEDEADKEY_* ]]; then
+    # Normalize: ensure the ONEDEADKEY_LAYOUT_ prefix
+    if [[ "$layout" == ONEDEADKEY_LAYOUT_* ]]; then
+        :
+    elif [[ "$layout" == LAYOUT_* ]]; then
         layout="ONEDEADKEY_$layout"
+    else
+        layout="ONEDEADKEY_LAYOUT_$layout"
     fi
+
+    # Warn (don't fail) if the resolved layout has no matching branch in shared/layouts.h.
+    # Compilation would later fail at the '#error "Arsenik: Unknown layout"' fallthrough.
+    if ! grep -q "defined $layout\b" "$SCRIPT_DIR/shared/layouts.h" 2>/dev/null; then
+        log_warn "Layout ${CYAN}$layout${NC} has no branch in shared/layouts.h — compile will fail unless you add one."
+    fi
+
     echo "$layout"
 }
 
@@ -169,8 +194,12 @@ generate_keymap() {
     local output_dir="$3"
     local src="$4"
 
-    local layout_name="$(detect_layout_name "$keyboard_model" "$keymap")"
-    log_info "Detected layout name: ${CYAN}$layout_name${NC}"
+    local layout_name="$(detect_layout_name "$keyboard_model" "$keymap" "$layout_override")"
+    if [ -n "$layout_override" ]; then
+        log_info "Using explicit layout (from -layout): ${CYAN}$layout_name${NC}"
+    else
+        log_info "Detected layout name: ${CYAN}$layout_name${NC}"
+    fi
     log_info "Using keymap source: ${CYAN}$src${NC}"
 
     log_info "Copying shared files to output directory..."

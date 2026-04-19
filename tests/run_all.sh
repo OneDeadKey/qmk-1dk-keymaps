@@ -10,12 +10,18 @@ set -euo pipefail
 TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "════════════════════════════════════════════════════════"
-echo "  Step 1: Per-option compile"
+echo "  Step 1: generator.sh -layout flag"
+echo "════════════════════════════════════════════════════════"
+bash "$TESTS_DIR/test_layout_flag.sh" "$@"
+
+echo ""
+echo "════════════════════════════════════════════════════════"
+echo "  Step 2: Per-option compile"
 echo "════════════════════════════════════════════════════════"
 bash "$TESTS_DIR/test_per_option.sh" "$@"
 
 echo ""
 echo "════════════════════════════════════════════════════════"
-echo "  Step 2: Exhaustive compile"
+echo "  Step 3: Exhaustive compile"
 echo "════════════════════════════════════════════════════════"
 bash "$TESTS_DIR/test_exhaustive.sh" "$@"
