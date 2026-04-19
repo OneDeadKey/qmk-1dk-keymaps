@@ -171,8 +171,22 @@ The keymaps use a `ONEDEADKEY_LAYOUT` macro that adapts automatically to differe
 - `LAYOUT_ortho_5x12`
 - `LAYOUT_planck_grid`
 - `LAYOUT_keebio_iris`
+- `LAYOUT` on Lily58 (all variants: `rev1`, `light`, `lite_rev3`, `glow_enc`, `r2g` — see below)
 
 If your keyboard is not listed, you can add its layout to `shared/layouts.h` or [open an issue](https://github.com/OneDeadKey/qmk-config-aekeynox/issues) for help.
+
+### Lily58 (58 keys, 5 rows + 4 thumbs per side)
+
+Lily58 has **4 keys beyond** the 42-key Selenium/Arsenik spec: 1 inner-corner key per side (below the home row) and 1 extra outermost thumb per side. They default to `KC_NO` (inert). Override in your keymap's `options.h`:
+
+```c
+#define ODK_EXT_INNER_L     KC_LBRC  // left  inner corner
+#define ODK_EXT_INNER_R     KC_RBRC  // right inner corner
+#define ODK_EXT_THUMB_OUT_L KC_LCTL  // left  outermost thumb
+#define ODK_EXT_THUMB_OUT_R KC_RCTL  // right outermost thumb
+```
+
+**Selenium caveat:** Selenium is a 42-key spec, so logical row 1 (the top row) is transparent on every layer. On Lily58 with Selenium, the physical number row emits nothing until you edit `selenium/keymap.c` row 1 locally. **Arsenik is unaffected** — its base layer uses the top row for numbers natively.
 
 ### Inner-column extensions (`_ex2` layouts)
 
