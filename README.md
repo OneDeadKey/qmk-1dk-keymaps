@@ -156,7 +156,9 @@ The keymaps use a `ONEDEADKEY_LAYOUT` macro that adapts automatically to differe
 
 - `LAYOUT_split_3x5_2`
 - `LAYOUT_split_3x5_3`
+- `LAYOUT_split_3x5_3_ex2` (4 extra inner-column keys — see below)
 - `LAYOUT_split_3x6_3`
+- `LAYOUT_split_3x6_3_ex2` (4 extra inner-column keys — see below)
 - `LAYOUT_ortho_4x10`
 - `LAYOUT_ortho_4x12`
 - `LAYOUT_ortho_5x10`
@@ -165,6 +167,21 @@ The keymaps use a `ONEDEADKEY_LAYOUT` macro that adapts automatically to differe
 - `LAYOUT_keebio_iris`
 
 If your keyboard is not listed, you can add its layout to `shared/layouts.h` or [open an issue](https://github.com/OneDeadKey/qmk-config-aekeynox/issues) for help.
+
+### Inner-column extensions (`_ex2` layouts)
+
+Boards like the Corne v4 expose an `_ex2` variant with **4 extra physical keys** — 2 per side, stacked as a short inner column on the top and middle rows. These keys are outside the Selenium/Arsenik spec, so they default to `KC_NO` (inert).
+
+To bind them, add to your keymap's `options.h` before generating:
+
+```c
+#define ODK_EXT_LT KC_TAB   // left  inner-top
+#define ODK_EXT_LB KC_LCTL  // left  inner-middle
+#define ODK_EXT_RT KC_BSPC  // right inner-top
+#define ODK_EXT_RB KC_RSFT  // right inner-middle
+```
+
+The bound keycode is the same across all layers.
 
 ## Structure
 
