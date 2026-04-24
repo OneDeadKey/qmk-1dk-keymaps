@@ -106,6 +106,17 @@ run_selenium() {
     run_compile_test selenium "macos=on" \
         "$(enable MACOS)"
 
+    run_compile_test selenium "mod_hold_nav=on" \
+        "$(enable ENABLE_MOD_HOLD_NAVIGATION)"
+
+    run_compile_test selenium "mod_hold_nav=on left_space=on" \
+        "$(enable ENABLE_MOD_HOLD_NAVIGATION)" \
+        "$(enable LEFT_HAND_SPACE)"
+
+    run_compile_test selenium "mod_hold_nav=on vim=on" \
+        "$(enable ENABLE_MOD_HOLD_NAVIGATION)" \
+        "$(enable VIM_NAVIGATION)"
+
     # Host layouts
     local host_sed=""
     for layout in ERGOL ERGLACE AZERTY BEPO QWERTY_LAFAYETTE QWERTY; do

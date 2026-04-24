@@ -77,6 +77,15 @@
 
 // #define HRM_SHIFT
 
+// [Experimental]
+// Uncomment the following line to enable the "mod-hold behavior" on the left
+// thumb navigation layer key. When enabled, if LAlt is held while entering the
+// navigation layer, LAlt is kept held until the navigation layer is released.
+// This enables one-handed Alt+Tab using VIM_PREV/VIM_NEXT on the vim_nav layer,
+// but may cause unwanted side effects.
+
+// #define ENABLE_MOD_HOLD_NAVIGATION
+
 // Uncomment the following line to swap Space and Backspace.
 // Beware: this increases the typing load of the left thumb.
 

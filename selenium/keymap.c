@@ -11,14 +11,6 @@
 #define SC_SAVE  C(AS(S))
 #define SC_ALL   C(AS(A))
 
-#ifdef MAC_MODIFIERS
-#    define SC_PREV G(KC_LBRC)
-#    define SC_NEXT G(KC_RBRC)
-#else
-#    define SC_PREV A(KC_LEFT)
-#    define SC_NEXT A(KC_RGHT)
-#endif
-
 enum arsenik_layers {
     _base,
     _num_lock,
@@ -37,6 +29,8 @@ enum custom_keycodes {
     ODK_4,              // ¢
     ODK_5,              // ‰
     LSK_RALT,           // EZ_LSK(RALT): go to base layer, then sticky RALT
+    VIM_PREV,           // Alt+Left; morphs to Shift+Grave when LAlt/LGUI is held
+    VIM_NEXT,           // Alt+Right; morphs to Grave when LAlt/LGUI is held
 };
 
 // QMK implementation of the Selenium specification.
@@ -76,7 +70,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     // 3. VimNav layer -- HJKL arrow cluster + GUI shortcuts (not accessible by default)
     [_vim_nav] = SELENIUM_LAYOUT(
-        __,  XX,       SC_CTL_W,  SC_PREV,     SC_NEXT,     XX,             KC_HOME,  KC_PGDN,  KC_PGUP,  KC_END,   KC_DEL,  __,
+        __,  XX,       SC_CTL_W,  VIM_PREV,    VIM_NEXT,    XX,             KC_HOME,  KC_PGDN,  KC_PGUP,  KC_END,   KC_DEL,  __,
         __,  SC_ALL,   SC_SAVE,   S(KC_TAB),   KC_TAB,      XX,             KC_LEFT,  KC_DOWN,  KC_UP,    KC_RGHT,  XX,      __,
         __,  SC_UNDO,  SC_CUT,    SC_COPY,     SC_PASTE,    SC_REDO,        XX,       XX,       XX,       XX,       XX,      __,
 
@@ -118,6 +112,67 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 static bool lsk_ralt_held = false;
 static bool lsk_ralt_used = false;
 
+// VIM_PREV / VIM_NEXT: mod-morph one-handed window cycling.
+// With LAlt or LGUI held: send Shift+Grave / Grave (keeping the held mod).
+// Otherwise: send Alt+Left / Alt+Right (or Cmd+[ / Cmd+] on Mac).
+static void vim_prev_action(void) {
+    const uint8_t mods = get_mods();
+    if (mods & (MOD_BIT(KC_LALT) | MOD_BIT(KC_LGUI))) {
+        register_code(KC_LSFT);
+        tap_code(KC_GRAVE);
+        unregister_code(KC_LSFT);
+    } else {
+#ifdef MAC_MODIFIERS
+        register_code(KC_LGUI);
+        tap_code(KC_LBRC);
+        unregister_code(KC_LGUI);
+#else
+        register_code(KC_LALT);
+        tap_code(KC_LEFT);
+        unregister_code(KC_LALT);
+#endif
+    }
+}
+
+static void vim_next_action(void) {
+    const uint8_t mods = get_mods();
+    if (mods & (MOD_BIT(KC_LALT) | MOD_BIT(KC_LGUI))) {
+        tap_code(KC_GRAVE);
+    } else {
+#ifdef MAC_MODIFIERS
+        register_code(KC_LGUI);
+        tap_code(KC_RBRC);
+        unregister_code(KC_LGUI);
+#else
+        register_code(KC_LALT);
+        tap_code(KC_RGHT);
+        unregister_code(KC_LALT);
+#endif
+    }
+}
+
+#ifdef ENABLE_MOD_HOLD_NAVIGATION
+// The left-thumb LT keycode depends on LEFT_HAND_SPACE; the right thumb always
+// resolves to a different keycode (either via a different tap code or a
+// different target layer), so matching on the left-thumb keycode is unambiguous.
+#    ifdef LEFT_HAND_SPACE
+#        define MHN_LEFT_LT LT(_SE_NAV, KC_SPC)
+#    else
+#        define MHN_LEFT_LT LT(_SE_NAV, KC_BSPC)
+#    endif
+
+static bool mhn_left_thumb_pressed = false;
+static bool mhn_alt_held = false;
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+    if (mhn_left_thumb_pressed && !mhn_alt_held && IS_LAYER_ON_STATE(state, _SE_NAV)) {
+        register_mods(MOD_BIT(KC_LALT));
+        mhn_alt_held = true;
+    }
+    return state;
+}
+#endif
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
         // Track whether another key was pressed while LSK_RALT is held
@@ -137,12 +192,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             case ODK_3: ODK3_SEQUENCE; return false;
             case ODK_4: ODK4_SEQUENCE; return false;
             case ODK_5: ODK5_SEQUENCE; return false;
+            case VIM_PREV: vim_prev_action(); return false;
+            case VIM_NEXT: vim_next_action(); return false;
             case LSK_RALT:
                 layer_move(_base);
                 register_mods(MOD_BIT(KC_RALT));
                 lsk_ralt_held = true;
                 lsk_ralt_used = false;
                 return false;
+#ifdef ENABLE_MOD_HOLD_NAVIGATION
+            case MHN_LEFT_LT: mhn_left_thumb_pressed = true; return true;
+#endif
         }
     } else {
         switch (keycode) {
@@ -151,6 +211,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 if (!lsk_ralt_used) { set_oneshot_mods(MOD_BIT(KC_RALT)); }
                 lsk_ralt_held = false;
                 return false;
+#ifdef ENABLE_MOD_HOLD_NAVIGATION
+            case MHN_LEFT_LT:
+                mhn_left_thumb_pressed = false;
+                if (mhn_alt_held) {
+                    unregister_mods(MOD_BIT(KC_LALT));
+                    mhn_alt_held = false;
+                }
+                return true;
+#endif
         }
     }
 
