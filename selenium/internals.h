@@ -88,10 +88,15 @@
 #    define KC_LL KC_L
 #endif
 
-// Shift as pinky HRM
-#ifdef HRM_SHIFT
+// Pinky home keys (A / ;). With HRM_SHIFT they carry Shift; otherwise
+// PINKY_MOD_HOLD makes them a no-op hold-tap (LT to base layer 0) for tap/hold
+// timing only — the mod-pin itself is in keymap.c. Plain keycodes when neither.
+#if defined HRM_SHIFT
 #    define KC_AA   LSFT_T(KC_A)
 #    define KC_SCSC RSFT_T(KC_SCLN)
+#elif defined PINKY_MOD_HOLD
+#    define KC_AA   LT(0, KC_A)
+#    define KC_SCSC LT(0, KC_SCLN)
 #else
 #    define KC_AA   KC_A
 #    define KC_SCSC KC_SCLN
