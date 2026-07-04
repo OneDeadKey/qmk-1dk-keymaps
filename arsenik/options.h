@@ -34,7 +34,7 @@
  * least 6 thumb keys (so 3 per thumb) instead of 3 thumb keys total and is
  * overall a lot less efficient (especially when combining modifiers).
  *
- * Base thumb config: LSFT_T(KC_ESC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
+ * Base thumb config: LSFT_T(KC_BSPC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
  * When it's active: KC_ALT  KC_CTL  KC_GUI     MO(_num_nav)  KC_SPC  KC_RALT
  * (KC_RALT becomes the `_symbols` layer if `ENABLE_SYMBOLS_LAYER`
  * is active)
@@ -47,8 +47,8 @@
  * total). When active, the numbers and navigation layers are split into two
  * distinct layers and an escape key is added, using the extra thumb key.
  *
- * Base thumb config:  LSFT_T(KC_ESC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
- * When active:        LSFT_T(KC_ESC)  LT(_num_row, KC_BSPC)  LT(_vim_nav, KC_SPC)  RALT_T(KC_ENT)
+ * Base thumb config:  LSFT_T(KC_BSPC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
+ * When active:        LSFT_T(KC_ESC)  LT(_vim_nav, KC_BSPC)  LT(_num_row, KC_SPC)  RALT_T(KC_ENT)
  */
 
 // #define LEFT_HAND_SPACE
