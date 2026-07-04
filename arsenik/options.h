@@ -5,12 +5,17 @@
 // declarations.
 
 #define ENABLE_SYMBOLS_LAYER
-/* When active, gives access to the programming symbols layer used by layouts
- * like Ergo‑L and all of the "Lafayette" familly of layouts (it's their AltGr
- * layer). The definition of this layer depends on the keyboard layout you are
- * using, so make sure to select the correct one in the list bellow.
+/* Enables the programming symbols layer used by layouts like Ergo‑L and
+ * all of the "Lafayette" family of layouts (it's their "AltGr like" layer).
+ * It does not cover the full AltGr layer — the AltGr-only glyphs (math
+ * signs, dead keys) are out of reach here. It is, however, more portable
+ * than native AltGr, which behaves differently across OSes (on Windows
+ * AltGr = Ctrl+Alt, so its symbols can't be used in keyboard shortcuts).
+ * The definition of this layer depends on the keyboard layout you are using, so
+ * make sure to select the correct one in the list below.
  *
- * When inactive, this layer is discarded and replaced by AltGr.
+ * When inactive, this layer is discarded and replaced by native AltGr, which
+ * exposes the host layout's full AltGr layer (those glyphs included).
  */
 
 // #define ENABLE_HRM
