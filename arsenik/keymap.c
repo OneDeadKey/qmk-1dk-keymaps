@@ -39,7 +39,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_ESC,   KC_A,  KC_SS,  KC_DD,  KC_FF,  KC_G,        KC_H,  KC_JJ,  KC_KK,    KC_LL,   KC_SCLN,  KC_ENTER,
         KC_LSFT,  KC_Z,  KC_X,   KC_C,   KC_V,   KC_B,        KC_N,  KC_M,   KC_COMM,  KC_DOT,  KC_SLSH,  KC_RSFT,
 
-					 LTHUMB_TUCK, LTHUMB_HOME, LTHUMB_REACH
+					 LEFT_THUMB, THUMB_BAR, RIGHT_THUMB
     ),
 
     [_symbols] = ARSENIK_LAYOUT(
