@@ -5,12 +5,17 @@
 // declarations.
 
 #define ENABLE_SYMBOLS_LAYER
-/* When active, gives access to the programming symbols layer used by layouts
- * like Ergo‑L and all of the "Lafayette" familly of layouts (it's their AltGr
- * layer). The definition of this layer depends on the keyboard layout you are
- * using, so make sure to select the correct one in the list bellow.
+/* Enables the programming symbols layer used by layouts like Ergo‑L and
+ * all of the "Lafayette" family of layouts (it's their "AltGr like" layer).
+ * It does not cover the full AltGr layer — the AltGr-only glyphs (math
+ * signs, dead keys) are out of reach here. It is, however, more portable
+ * than native AltGr, which behaves differently across OSes (on Windows
+ * AltGr = Ctrl+Alt, so its symbols can't be used in keyboard shortcuts).
+ * The definition of this layer depends on the keyboard layout you are using, so
+ * make sure to select the correct one in the list below.
  *
- * When inactive, this layer is discarded and replaced by AltGr.
+ * When inactive, this layer is discarded and replaced by native AltGr, which
+ * exposes the host layout's full AltGr layer (those glyphs included).
  */
 
 // #define ENABLE_HRM
@@ -34,7 +39,7 @@
  * least 6 thumb keys (so 3 per thumb) instead of 3 thumb keys total and is
  * overall a lot less efficient (especially when combining modifiers).
  *
- * Base thumb config: LSFT_T(KC_ESC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
+ * Base thumb config: LSFT_T(KC_BSPC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
  * When it's active: KC_ALT  KC_CTL  KC_GUI     MO(_num_nav)  KC_SPC  KC_RALT
  * (KC_RALT becomes the `_symbols` layer if `ENABLE_SYMBOLS_LAYER`
  * is active)
@@ -43,13 +48,12 @@
  */
 
 // #define VIM_NAVIGATION
-/* Most ergonomic keyboards have at least 4 comfortable thumb keys keys (so 2
- * per thumb). Selenium is a variant of Arsenik made to fit on 34 keys keyboard
- * to take advantage of the extra thumb key. It does it by splitting the numbers
- * and navigation layers to 2 distict layers, and adds an escape key.
+/* Targets keyboards with two comfortable thumb keys per hand (4 thumb keys
+ * total). When active, the numbers and navigation layers are split into two
+ * distinct layers and an escape key is added, using the extra thumb key.
  *
- * Base thumb config: LSFT_T(KC_ËSC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
- * Selenium: LSFT_T(KC_ESC) LT(_num_row, KC_BSPC) LT(_vim_nav, KC_SPC) RALT_T(KC_ENT)
+ * Base thumb config:  LSFT_T(KC_BSPC)  LT(_num_nav, KC_SPC)  RALT_T(KC_ENT)
+ * When active:        LSFT_T(KC_ESC)  LT(_vim_nav, KC_BSPC)  LT(_num_row, KC_SPC)  RALT_T(KC_ENT)
  */
 
 // #define LEFT_HAND_SPACE

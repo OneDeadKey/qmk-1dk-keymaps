@@ -45,13 +45,10 @@ setup_env() {
     fi
 
     if [ -z "${QMK_HOME+x}" ]; then
+        # Mirror qmk's own expansion: literal $HOME or leading ~ → absolute path.
         QMK_HOME=$(qmk_config_value user.qmk_home)
-        # Expand $HOME if envsubst is available, otherwise use eval
-        if command -v envsubst > /dev/null 2>&1; then
-            QMK_HOME=$(echo "$QMK_HOME" | envsubst)
-        else
-            QMK_HOME=$(eval echo "$QMK_HOME")
-        fi
+        QMK_HOME="${QMK_HOME//\$HOME/$HOME}"
+        QMK_HOME="${QMK_HOME/#\~/$HOME}"
     fi
 
     log_info "Keyboard: ${CYAN}$KEYBOARD${NC}"
