@@ -1,5 +1,5 @@
 #pragma once
-#include "keycodes.h"
+#include "keycodes_aekeynox.h"
 
 // Bepolar host layout — derived from zmk-config-aekeynox keymaps/aliases/bepolar.h
 

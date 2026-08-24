@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../shared/keycodes.h"
+#include "../shared/keycodes_aekeynox.h"
 #include "../shared/layouts.h"
 
 // Symbols layer access

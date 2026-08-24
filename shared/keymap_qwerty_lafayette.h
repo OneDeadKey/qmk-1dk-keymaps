@@ -1,5 +1,5 @@
 #pragma once
-#include "keycodes.h"
+#include "keycodes_aekeynox.h"
 
 // Qwerty-Lafayette: same as Qwerty for letters, differs for a few symbols.
 // Only symbols and keys used via AS() in keymaps need to be defined here.
