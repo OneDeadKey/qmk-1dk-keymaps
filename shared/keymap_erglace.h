@@ -1,5 +1,5 @@
 #pragma once
-#include "keycodes.h"
+#include "keycodes_aekeynox.h"
 
 // Aliases
 #define EG_GRV  KC_GRV  // `
