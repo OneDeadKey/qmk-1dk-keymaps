@@ -80,7 +80,12 @@ _generate_and_install() {
     local layout_arg=()
     [ -n "${LAYOUT_OVERRIDE:-}" ] && layout_arg=(-layout "$LAYOUT_OVERRIDE")
     rm -rf "$output_dir" "$gen_dir"
-    (cd "$REPO_DIR" && bash generator.sh -src "./$target" -kb "$KEYBOARD" "${layout_arg[@]}" > /dev/null 2>&1)
+    local gen_output
+    if ! gen_output=$(cd "$REPO_DIR" && bash generator.sh -src "./$target" -kb "$KEYBOARD" "${layout_arg[@]}" 2>&1); then
+        log_fail "$target: keymap generation failed"
+        echo "$gen_output" >&2
+        return 1
+    fi
     mv "$gen_dir" "$output_dir"
 
     # Patch options.h
