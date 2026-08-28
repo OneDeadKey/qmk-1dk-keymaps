@@ -250,6 +250,10 @@ create_output_dir() {
     local output_dir="$1"
     if [ -d "$output_dir" ]; then
         log_warn "Output directory ${CYAN}$output_dir${NC} already exists."
+        if [ ! -t 0 ]; then
+            log_error "Cannot prompt without a TTY; remove it, or pass a different '-name'."
+            exit 1
+        fi
         read -p "Do you want to remove it and continue? [y/N]: " confirm
         if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
             log_info "Aborted by user."
@@ -278,6 +282,8 @@ generate_keymap() {
     fi
     log_info "Using keymap source: ${CYAN}$src${NC}"
 
+    create_output_dir "$output_dir"
+
     log_info "Copying shared files to output directory..."
     cp -R "$SCRIPT_DIR/shared/." "$output_dir/"
 
@@ -301,13 +307,16 @@ generate_keymap() {
 # Main
 output_dir="./output/$keyboard_model/keymaps/$target_name"
 
-create_output_dir "$output_dir"
 generate_keymap "$keyboard_model" "$output_dir" "$src_path"
 
 if [ "$copy_keymap" = true ]; then
     dest_dir="$QMK_HOME/keyboards/$keyboard_model/keymaps/$target_name"
     if [ -d "$dest_dir" ]; then
         log_warn "Destination directory ${CYAN}$dest_dir${NC} already exists."
+        if [ ! -t 0 ]; then
+            log_error "Cannot prompt without a TTY; remove it, or pass a different '-name'."
+            exit 1
+        fi
         read -p "Do you want to overwrite it and continue? [y/N]: " confirm
         if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
             log_info "Aborted by user."
