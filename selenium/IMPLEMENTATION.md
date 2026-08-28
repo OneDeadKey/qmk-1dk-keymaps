@@ -141,6 +141,7 @@ Some Selenium ZMK behaviors (custom or reconfigured native) have no direct QMK n
 | Selenium ZMK behavior                                           | Selenium QMK approximation               | What's lost                                                                                                                   |
 | --------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `EZ_SK(LSHIFT)` (Selenium custom: sticky key hold-tap)          | QMK native `OSM(MOD_LSFT)`               | — (equivalent: QMK native `OSM()` is one-shot on tap and continuous modifier on hold)                                         |
+| `shift_caps` (Selenium custom: Shift→CapsLock morph)            | `SHIFT_CAPS` (Selenium QMK custom keycode)| — (equivalent: sticky Shift on tap, CapsLock when Shift is already down)                                                      |
 | `sym_shift_altgr` (Selenium custom: shift→AltGr morph)          | QMK native `OSL(_symbols)`               | Shift morph: tapping shift doesn't switch to AltGr                                                                            |
 | `EZ_SL` (Selenium custom: hold=momentary, tap=one-shot layer)   | QMK native `OSL(_symbols)`               | — (equivalent: QMK native `OSL()` provides one-shot on tap and momentary on hold)                                             |
 | `EZ_LSK(RALT)` (Selenium custom: sticky key on base layer)      | `LSK_RALT` (Selenium QMK custom keycode) | — (equivalent: see [EZ_LSK(RALT)](#ez_lskralt-sticky-altgr-on-base-layer) below)                                              |
@@ -148,6 +149,31 @@ Some Selenium ZMK behaviors (custom or reconfigured native) have no direct QMK n
 | `&lt FUNCTION LS(SPACE)` (ZMK native, with shifted tap)         | Not implemented                          | See [Insecable space](#insecable-space) below.                                                                                |
 | `&sl { ignore-modifiers; }` (ZMK native, reconfigured)          | QMK native default behavior              | — (equivalent: QMK native `OSL` natively preserves modifiers when chaining OSM→OSL)                                           |
 | `&sk { quick-release; }` (ZMK native, reconfigured)             | Similar QMK native default               | Minor timing difference: QMK releases OSM on next key release, ZMK `quick-release` on next key press. Negligible in practice. |
+
+## Key Overrides vs mod-morph: the capability boundary
+
+`KEY_OVERRIDE` swaps one report-level keycode (plus modifiers) for another when the trigger modifiers are held. Its `replacement` is always a keycode — never a behavior. A ZMK `zmk,behavior-mod-morph` is more general: each of its two `bindings` can be any behavior (`&lt` layer-tap, `&sc`/`&sk` sticky, `&sl`/`&EZ_SL` sticky-layer, or a nested morph). Two conditions must **both** hold for a key override to reproduce a morph:
+
+1. **Both sides are plain keycodes.** If either side is a behavior, there is no report-level keycode to stand in for it — unreproducible.
+2. **The un-morphed side does not emit the trigger modifier.** A key override reads the keyboard report; it cannot tell a modifier the key emits itself from one held externally. If the base output already carries the trigger mod, the override cannot distinguish a plain press from the morph condition, so it misfires.
+
+(A third, independent limit: overrides are global per keycode, so even a qualifying morph leaks to every occurrence of that keycode — see [Mod-morph decision](#mod-morph-magic_backspacemagic_space).)
+
+This sorts every aekeynox mod-morph into two buckets.
+
+**Reproducible with `KEY_OVERRIDE`** — both sides plain keycodes, base emits no trigger mod (subject to the global-scope caveat):
+
+- `dash` (bépo extra layer) — base `8`, Shift morph to `Y`.
+- `TWO_LEVEL_KEY` punctuation instances whose both sides are `&kp` — base glyph, Shift morph to the shifted glyph.
+
+**Not reproducible with `KEY_OVERRIDE`** — needs custom C or stays unimplemented:
+
+- `vim_prev` / `vim_next` — both sides are plain keycodes, but fail condition 2: the un-morphed output is Alt+Left / Alt+Right and the morph triggers on that same held Alt (LGUI on Mac). Also branches per-OS (Alt+Left vs Cmd+`[`), which an override cannot do. Implemented as the `VIM_PREV` / `VIM_NEXT` custom keycodes (custom C in `keymap.c`, the manual equivalent of a key override's `custom_action`).
+- `shift_caps` — the un-morphed side is a sticky key, failing condition 1; the morphed side also triggers on the Shift the base side emits, failing condition 2. Implemented as the `SHIFT_CAPS` custom keycode.
+- `magic_backspace` / `magic_space` / `magic_backspace_34_keys` — layer-tap + sticky-combo, fail condition 1 (see [Mod-morph decision](#mod-morph-magic_backspacemagic_space)).
+- `sym_shift_altgr` / `sym_shift_altgr_inner` — nested morph + sticky-layer/sticky-key (see [sym_shift_altgr](#sym_shift_altgr-shiftaltgr-morph)).
+- `dead_key` (bépo extra layer) — sticky-layer on the base side.
+- `bt_sel1_clr` (`TWO_LEVEL_KEY` instance) — Bluetooth behaviors.
 
 ## Mod-morph (magic_backspace/magic_space)
 
